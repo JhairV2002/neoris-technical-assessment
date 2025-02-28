@@ -8,5 +8,5 @@ import java.util.Date;
 import java.util.List;
 
 public interface ReportesService {
-    ReporteDTO findMovimientosByCuentaNumAndFechaRange(Long clienteId, Date fechaInicio, Date fechaFin) throws RecordNotFound;
+    ReporteDTO generateReport(Long clienteId, Date fechaInicio, Date fechaFin, String tipoReporte) throws RecordNotFound;
 }

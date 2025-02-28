@@ -1,78 +1,42 @@
 package jhair.vasquez.ms.core.cuentas.movimientos.service.impl;
 
-import db.repositorio.financiero.dtos.ClienteResponseDTO;
-import db.repositorio.financiero.dtos.CuentaConMovimientoDTO;
+
 import db.repositorio.financiero.dtos.ReporteDTO;
-import db.repositorio.financiero.entity.Cuenta;
-import db.repositorio.financiero.entity.Movimiento;
-import db.repositorio.financiero.repository.CuentaRepository;
-import db.repositorio.financiero.repository.MovimientosRepository;
-import jhair.vasquez.ms.core.cuentas.movimientos.communication.KafkaProducerClient;
+import jhair.vasquez.ms.core.cuentas.movimientos.customExceptions.InvalidStrategyException;
 import jhair.vasquez.ms.core.cuentas.movimientos.customExceptions.RecordNotFound;
-import jhair.vasquez.ms.core.cuentas.movimientos.service.interfaces.CuentaService;
+import jhair.vasquez.ms.core.cuentas.movimientos.service.interfaces.ReporteStrategy;
 import jhair.vasquez.ms.core.cuentas.movimientos.service.interfaces.ReportesService;
+import jhair.vasquez.ms.core.cuentas.movimientos.service.strategy.strategy.MovementsByAccountAndDateRangeStrategy;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @AllArgsConstructor
 public class ReportesServiceImpl implements ReportesService{
-    private final MovimientosRepository movimientosRepository;
-    private final CuentaRepository cuentaRepository;
-    private final KafkaProducerClient kafkaProducerClient;
+    private final BeanFactory beanFactory;
 
     @Override
-    public ReporteDTO findMovimientosByCuentaNumAndFechaRange(Long clienteId, Date fechaInicio, Date fechaFin) throws RecordNotFound {
-        if (fechaInicio.after(fechaFin)) {
-            throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
+    public ReporteDTO generateReport(Long clienteId, Date fechaInicio, Date fechaFin, String tipoReporte) throws RecordNotFound {
+        if (!beanFactory.containsBean(tipoReporte)) {
+            log.error("Tipo de reporte no válido: {}", tipoReporte);
+            throw new InvalidStrategyException("El tipo de reporte '" + tipoReporte + "' no es válido o no está registrado");
         }
 
-        // Validar la existencia del cliente usando Kafka
-        log.info("Validando existencia del cliente con ID: {}", clienteId);
-        ClienteResponseDTO clienteResponse = kafkaProducerClient.fetchCliente(clienteId);
-        if (clienteResponse.getCliente() == null) {
-            log.warn("Cliente con ID {} no encontrado en ms-core-persona-cliente", clienteId);
-            throw new RecordNotFound("No se encontró el cliente con ID: " + clienteId);
+        try {
+            // Obtener la estrategia por el nombre del bean
+            ReporteStrategy strategy = beanFactory.getBean(tipoReporte, ReporteStrategy.class);
+            log.info("Usando estrategia: {}", strategy.getClass().getSimpleName());
+            return strategy.generateReport(clienteId, fechaInicio, fechaFin);
+        } catch (NoSuchBeanDefinitionException e) {
+            // Este catch es redundante con containsBean, pero lo dejamos por seguridad
+            log.error("No se encontró la estrategia para el tipo de reporte: {}", tipoReporte, e);
+            throw new InvalidStrategyException("El tipo de reporte '" + tipoReporte + "' no está registrado");
         }
-        log.info("Cliente con ID {} validado exitosamente", clienteId);
-
-        // Obtener todas las cuentas del cliente
-        List<Cuenta> cuentas = cuentaRepository.findCuentaByClienteId(clienteId)
-                .orElseThrow(() -> new RecordNotFound("No se encontraron cuentas para el cliente con ID " + clienteId));
-
-        // Construir el reporte
-        List<CuentaConMovimientoDTO> cuentasConMovimientos = cuentas.stream()
-                .map(cuenta -> {
-                    // Obtener movimientos en el rango de fechas
-                    List<Movimiento> movimientos = movimientosRepository
-                            .findMovimientoByCuentaNumAndFechaBetween(cuenta.getNumCuenta(), fechaInicio, fechaFin);
-
-                    // Calcular saldo actual (último movimiento o saldo inicial si no hay movimientos)
-                    BigDecimal saldoActual = movimientosRepository
-                            .findMovimientoByCuentaNumOrderByFechaDesc(cuenta.getNumCuenta())
-                            .stream()
-                            .map(Movimiento::getSaldo)
-                            .findFirst()
-                            .orElse(cuenta.getSaldoInicial());
-
-                    return CuentaConMovimientoDTO.builder()
-                            .cuenta(cuenta)
-                            .saldoActual(saldoActual)
-                            .movimientos(movimientos)
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        return ReporteDTO.builder()
-                .clienteId(clienteId)
-                .cuentas(cuentasConMovimientos)
-                .build();
     }
 }

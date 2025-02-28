@@ -2,8 +2,10 @@ package jhair.vasquez.ms.core.cuentas.movimientos.globalHandelException;
 
 import jhair.vasquez.ms.core.cuentas.movimientos.base.GenericResponse;
 import jhair.vasquez.ms.core.cuentas.movimientos.customExceptions.InsufficientFundsException;
+import jhair.vasquez.ms.core.cuentas.movimientos.customExceptions.InvalidStrategyException;
 import jhair.vasquez.ms.core.cuentas.movimientos.customExceptions.RecordNotFound;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +29,16 @@ public class GlobalHandleException {
                 .message(e.getMessage())
                 .payload(null)
                 .build());
+    }
+
+    @ExceptionHandler(InvalidStrategyException.class)
+    public ResponseEntity<GenericResponse<Object>> handleInvalidReportStrategy(InvalidStrategyException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(GenericResponse.builder()
+                        .status(HttpStatusCode.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .message(ex.getMessage())
+                        .payload(null)
+                        .build());
     }
 
 }

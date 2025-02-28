@@ -33,13 +33,14 @@ public class ReportesController {
     public ResponseEntity<GenericResponse<ReporteDTO>> getReporteByCuentaAndFechas(
             @RequestParam("clienteId") Long clienteId,
             @RequestParam("fechaInicio") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechaInicio,
-            @RequestParam("fechaFin") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechaFin) throws RecordNotFound {
-        ReporteDTO movimientos = reportesService.findMovimientosByCuentaNumAndFechaRange(clienteId, fechaInicio, fechaFin);
+            @RequestParam("fechaFin") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fechaFin,
+            @RequestParam("tipoReporte") String tipoReporte) throws RecordNotFound {
+        ReporteDTO reporte = reportesService.generateReport(clienteId, fechaInicio, fechaFin, tipoReporte);
         return ResponseEntity.ok(
                 GenericResponse.<ReporteDTO>builder()
                         .status(HttpStatusCode.valueOf(HttpStatus.OK.value()))
                         .message("Reporte generado con éxito")
-                        .payload(movimientos)
+                        .payload(reporte)
                         .build()
         );
     }
