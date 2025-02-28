@@ -3,11 +3,11 @@ CREATE SCHEMA IF NOT EXISTS persona;
 
 -- Crear tabla 'clientes' en el esquema 'persona'
 CREATE TABLE IF NOT EXISTS persona.clientes (
-                                                cliente_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                                nombres VARCHAR(255),
+    cliente_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombres VARCHAR(255),
     genero VARCHAR(255),
     edad INTEGER,
-    identificacion VARCHAR(255),
+    identificacion VARCHAR(255) NOT NULL UNIQUE,
     direccion VARCHAR(255),
     telefono VARCHAR(255),
     contrasenia VARCHAR(255) NOT NULL,

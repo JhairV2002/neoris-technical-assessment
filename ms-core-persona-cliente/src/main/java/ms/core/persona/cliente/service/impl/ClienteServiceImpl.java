@@ -1,9 +1,11 @@
 package ms.core.persona.cliente.service.impl;
 
+import db.repositorio.financiero.dtos.ClienteResponseDTO;
 import db.repositorio.financiero.entity.Cliente;
 import db.repositorio.financiero.repository.ClienteRepository;
 import lombok.AllArgsConstructor;
 import ms.core.persona.cliente.base.GenericResponse;
+import ms.core.persona.cliente.communication.KafkaProducer;
 import ms.core.persona.cliente.customExceptions.InvalidFieldException;
 import ms.core.persona.cliente.customExceptions.RecordAlreadyExistsException;
 import ms.core.persona.cliente.customExceptions.RecordNotFoundException;
@@ -18,6 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ClienteServiceImpl implements ClienteService {
     private final ClienteRepository clienteRepository;
+    private final KafkaProducer kafkaProducerClient;
 
     @Override
     public GenericResponse<List<Cliente>> findAll() {
@@ -105,6 +108,9 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente clientToDelete = clienteRepository.findById(id)
                 .orElseThrow(() -> new RecordNotFoundException("No se encontró el cliente con el id: " + id));
         clientToDelete.setEstado(Boolean.FALSE);
+
+        kafkaProducerClient.sendEliminacionLogica(id);
+
         return GenericResponse.<String>builder().status(HttpStatusCode.valueOf(HttpStatus.OK.value()))
                 .message("Success")
                 .payload("Cliente eliminado correctamente").build();

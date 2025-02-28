@@ -15,6 +15,7 @@ public class Persona {
     @Enumerated(EnumType.STRING)
     private Genero genero;
     private Integer edad;
+    @Column(nullable = false, unique = true)
     private String identificacion;
     private String direccion;
     private String telefono;
