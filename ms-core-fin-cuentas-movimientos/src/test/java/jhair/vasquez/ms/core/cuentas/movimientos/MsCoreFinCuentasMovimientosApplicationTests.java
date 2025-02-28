@@ -1,11 +1,6 @@
 package jhair.vasquez.ms.core.cuentas.movimientos;
 
-import db.repositorio.financiero.dtos.ClienteRequestDTO;
-import db.repositorio.financiero.dtos.ClienteResponseDTO;
-import db.repositorio.financiero.entity.Cliente;
 import db.repositorio.financiero.entity.Cuenta;
-import jhair.vasquez.ms.core.cuentas.movimientos.cons.KafkaCons;
-import jhair.vasquez.ms.core.cuentas.movimientos.service.interfaces.CuentaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 
