@@ -40,36 +40,6 @@ services:
     networks:
       - internal_bank_network
 
-  ms-core-persona-cliente:
-    build: ./ms-core-persona-cliente
-    ports:
-      - "8080:8080"
-    depends_on:
-      - bank_db
-      - kafka
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://bank_db:5432/banco_db
-      SPRING_DATASOURCE_USERNAME: bank
-      SPRING_DATASOURCE_PASSWORD: JhairV2002
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    networks:
-      - internal_bank_network
-
-  ms-core-fin-cuentas-movimientos:
-    build: ./ms-core-fin-cuentas-movimientos
-    ports:
-      - "8081:8081"
-    depends_on:
-      - bank_db
-      - kafka
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://bank_db:5432/banco_db
-      SPRING_DATASOURCE_USERNAME: bank
-      SPRING_DATASOURCE_PASSWORD: JhairV2002
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    networks:
-      - internal_bank_network
-
 volumes:
   postgres_data:
 
