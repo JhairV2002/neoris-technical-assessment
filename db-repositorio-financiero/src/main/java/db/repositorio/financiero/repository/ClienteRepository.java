@@ -10,4 +10,5 @@ import java.util.List;
 public interface ClienteRepository extends CrudRepository<Cliente, Long> {
     List<Cliente> findAll();
     List<Cliente> findByEstado(boolean estado);
+    Cliente findClienteByIdentificacion(String identificacion);
 }

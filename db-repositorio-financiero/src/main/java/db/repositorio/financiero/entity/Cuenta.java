@@ -19,25 +19,6 @@ public class Cuenta {
     private BigDecimal saldoInicial;
     @Column(nullable = false)
     private boolean estado;
-
-    @ManyToOne
-    @JoinColumn(name = "cliente_id")
-    private Cliente cliente;
-
-    @PrePersist
-    public void prePersist() {
-        if (this.numCuenta == null || this.numCuenta.isEmpty()) {
-            this.numCuenta = generateNumCuenta(10);
-        }
-        this.estado = true;
-    }
-
-    public String generateNumCuenta(int length) {
-        StringBuilder builder = new StringBuilder();
-        Random random = new Random();
-        for (int i = 0; i < length; i++) builder.append(random.nextInt(10));
-
-        return builder.toString();
-
-    }
+    @Column(nullable = false)
+    private Long clienteId;
 }

@@ -1,8 +1,7 @@
 package db.repositorio.financiero.classes;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Table;
+import db.repositorio.financiero.enums.Genero;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,9 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @MappedSuperclass
 public class Persona {
-    private String nombre;
-    private String genero;
-    private String edad;
+    private String nombres;
+    @Enumerated(EnumType.STRING)
+    private Genero genero;
+    private Integer edad;
     private String identificacion;
     private String direccion;
     private String telefono;
