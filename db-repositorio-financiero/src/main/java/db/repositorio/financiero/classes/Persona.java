@@ -3,11 +3,11 @@ package db.repositorio.financiero.classes;
 import db.repositorio.financiero.enums.Genero;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
 public class Persona {
