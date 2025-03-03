@@ -1,5 +1,6 @@
 package db.repositorio.financiero.entity;
 
+import db.repositorio.financiero.enums.CuentaTipo;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,7 +15,8 @@ public class Cuenta {
     @Column(nullable = false, length = 10)
     private String numCuenta;
     @Column(nullable = false)
-    private String tipoCuenta;
+    @Enumerated(EnumType.STRING)
+    private CuentaTipo tipoCuenta;
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal saldoInicial;
     @Column(nullable = false)
