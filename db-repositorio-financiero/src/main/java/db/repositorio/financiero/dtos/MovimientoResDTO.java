@@ -5,12 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Data
-@AllArgsConstructor
 @Builder
-public class CuentaDTO {
+@AllArgsConstructor
+public class MovimientoResDTO {
+    private Date fecha;
     private String numCuenta;
-    private String tipoCuenta;
-    private BigDecimal saldoInicial;
+    private String tipoMovimiento;
+    private BigDecimal valor;
+    private BigDecimal saldo;
 }

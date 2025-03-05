@@ -1,5 +1,6 @@
 package ms.core.persona.cliente.controller;
 
+import db.repositorio.financiero.dtos.ClienteDTO;
 import db.repositorio.financiero.entity.Cliente;
 import lombok.AllArgsConstructor;
 import ms.core.persona.cliente.base.GenericResponse;
@@ -14,29 +15,21 @@ import java.util.List;
 @AllArgsConstructor
 public class ClienteController {
     private final ClienteServiceImpl clienteService;
-    @GetMapping("/getAll")
+
+    @GetMapping("/userInfo")
     @ResponseBody
-    public GenericResponse<List<Cliente>> findAll() {
-        return clienteService.findAll();
+    public GenericResponse<ClienteDTO> findById() throws RecordNotFoundException {
+        return clienteService.getClientInfo();
     }
 
-    @GetMapping("/getAllByEstado")
-    public GenericResponse<List<Cliente>> findByEstado(@RequestParam String estado) {
-        return clienteService.findByEstado(estado);
-    }
-
-    @GetMapping("/{id}")
-    public GenericResponse<Cliente> findById(@PathVariable Long id) throws RecordNotFoundException {
-        return clienteService.findById(id);
-    }
 
     @PostMapping("/create")
-    public GenericResponse<Cliente> save(@RequestBody Cliente cliente) throws Exception {
+    public GenericResponse<ClienteDTO> save(@RequestBody Cliente cliente) throws Exception {
         return clienteService.save(cliente);
     }
 
     @PutMapping("/update")
-    public GenericResponse<Cliente> update(@RequestBody Cliente cliente) throws Exception {
+    public GenericResponse<ClienteDTO> update(@RequestBody ClienteDTO cliente) throws Exception {
         return clienteService.update(cliente);
     }
 

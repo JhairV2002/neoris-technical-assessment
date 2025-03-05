@@ -1,8 +1,10 @@
 package ms.core.persona.cliente.unit;
 
+import db.repositorio.financiero.dtos.ClienteDTO;
 import db.repositorio.financiero.entity.Cliente;
 import ms.core.persona.cliente.base.GenericResponse;
 import ms.core.persona.cliente.controller.ClienteController;
+import ms.core.persona.cliente.mappers.ClienteMapper;
 import ms.core.persona.cliente.service.impl.ClienteServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,8 @@ import static org.mockito.Mockito.*;
 public class ClienteControllerTests {
     @Mock
     private ClienteServiceImpl clienteService;
+    @Mock
+    private ClienteMapper clienteMapper;
 
     @InjectMocks
     private ClienteController clienteController;
@@ -40,15 +44,15 @@ public class ClienteControllerTests {
         clienteInput.setDireccion("Calle Falsa 123");
         clienteInput.setTelefono("1234567890");
         clienteInput.setContrasenia("securePass123");
-        GenericResponse<Cliente> response = GenericResponse.<Cliente>builder()
+        GenericResponse<ClienteDTO> response = GenericResponse.<ClienteDTO>builder()
                 .status(HttpStatusCode.valueOf(HttpStatus.OK.value()))
                 .message("Success")
-                .payload(clienteInput)
+                .payload(clienteMapper.clienteToClienteDTO(clienteInput))
                 .build();
         when(clienteService.save(clienteInput)).thenReturn(response);
 
         // Act
-        GenericResponse<Cliente> result = clienteController.save(clienteInput);
+        GenericResponse<ClienteDTO> result = clienteController.save(clienteInput);
 
         // Assert
         assertEquals(HttpStatus.OK.value(), result.getStatus().value());

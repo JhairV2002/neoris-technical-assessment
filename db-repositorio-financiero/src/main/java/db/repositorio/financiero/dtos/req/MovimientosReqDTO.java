@@ -1,19 +1,15 @@
-package db.repositorio.financiero.dtos;
+package db.repositorio.financiero.dtos.req;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 @Data
 @Builder
 @AllArgsConstructor
-public class MovimientoDTO {
-    private Date fecha;
+public class MovimientosReqDTO {
     private String numCuenta;
-    private String tipoMovimiento;
     private BigDecimal valor;
-    private BigDecimal saldo;
 }
