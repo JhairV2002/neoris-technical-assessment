@@ -33,7 +33,7 @@ class MsCoreFinCuentasMovimientosApplicationTests {
     void createCuenta_ValidClient_ReturnsSavedCuenta() throws Exception {
         // Arrange
         Cuenta cuentaInput = new Cuenta();
-        cuentaInput.setTipoCuenta("AHORRO");
+        //cuentaInput.setTipoCuenta("AHORRO");
         cuentaInput.setSaldoInicial(new BigDecimal("500.00"));
         cuentaInput.setEstado(true);
         cuentaInput.setClienteId(1L);
@@ -63,7 +63,7 @@ class MsCoreFinCuentasMovimientosApplicationTests {
         // Arrange
         Cuenta cuentaInput = new Cuenta(); // Cliente no existe
         cuentaInput.setClienteId(null);
-        cuentaInput.setTipoCuenta("AHORRO");
+        //cuentaInput.setTipoCuenta("AHORRO");
         cuentaInput.setSaldoInicial(new BigDecimal("500.00"));
         cuentaInput.setEstado(true);
         cuentaInput.setClienteId(999L);

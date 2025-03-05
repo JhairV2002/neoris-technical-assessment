@@ -22,7 +22,6 @@ public class ClienteController {
         return clienteService.getClientInfo();
     }
 
-
     @PostMapping("/create")
     public GenericResponse<ClienteDTO> save(@RequestBody Cliente cliente) throws Exception {
         return clienteService.save(cliente);

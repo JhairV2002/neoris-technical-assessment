@@ -4,6 +4,7 @@ import db.repositorio.financiero.dtos.ClienteDTO;
 import db.repositorio.financiero.entity.Cliente;
 import db.repositorio.financiero.repository.ClienteRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ms.core.persona.cliente.base.GenericResponse;
 import ms.core.persona.cliente.customExceptions.InvalidFieldException;
 import ms.core.persona.cliente.customExceptions.RecordAlreadyExistsException;
@@ -12,25 +13,20 @@ import ms.core.persona.cliente.mappers.ClienteMapper;
 import ms.core.persona.cliente.service.interfaces.ClienteService;
 import ms.core.persona.cliente.utils.impl.FiledsUtils;
 import ms.core.persona.cliente.utils.impl.JWTUtilsImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static ms.core.persona.cliente.utils.impl.FiledsUtils.updateFieldIfPresent;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class ClienteServiceImpl implements ClienteService {
-    private static final Logger logger = LoggerFactory.getLogger(ClienteServiceImpl.class);
-
     private final ClienteRepository clienteRepository;
     private final ClienteMapper clienteMapper;
     private final JWTUtilsImpl jwtUtils;
@@ -47,16 +43,16 @@ public class ClienteServiceImpl implements ClienteService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String identificacion = authentication.getName();
 
-        logger.info("Consultando información del cliente con identificación: {}", identificacion);
+        log.info("Consultando información del cliente con identificación: {}", identificacion);
 
         Cliente cliente = clienteRepository.findClienteByIdentificacion(identificacion)
                 .orElseThrow(() -> {
                     String errorMsg = "No se encontró el cliente con la identificación: " + identificacion;
-                    logger.error(errorMsg);
+                    log.error(errorMsg);
                     return new RecordNotFoundException(errorMsg);
                 });
 
-        logger.info("Cliente consultado exitosamente: {}", cliente.getIdentificacion());
+        log.info("Cliente consultado exitosamente: {}", cliente.getIdentificacion());
 
 
 
@@ -78,38 +74,49 @@ public class ClienteServiceImpl implements ClienteService {
      */
     @Override
     public GenericResponse<ClienteDTO> save(Cliente cliente) throws Exception {
-        String identificacion = cliente.getIdentificacion();
-        logger.info("Intentando guardar cliente con identificación: {}", identificacion);
+        try{
+            String identificacion = cliente.getIdentificacion();
+            log.info("Intentando guardar cliente con identificación: {}", identificacion);
 
-        Optional<Cliente> existingClient = clienteRepository.findClienteByIdentificacion(identificacion);
-        if (existingClient.isPresent()) {
-            String errorMsg = "Ya existe un cliente con la identificación: " + identificacion;
-            logger.warn(errorMsg);
-            throw new RecordAlreadyExistsException(errorMsg);
+            Optional<Cliente> existingClient = clienteRepository.findClienteByIdentificacion(identificacion);
+            if (existingClient.isPresent()) {
+                String errorMsg = "Ya existe un cliente con la identificación: " + identificacion;
+                log.warn(errorMsg);
+                throw new RecordAlreadyExistsException(errorMsg);
+            }
+
+            if (identificacion.length() > 10) {
+                String errorMsg = "La identificación debe tener 10 números";
+                log.warn(errorMsg);
+                throw new InvalidFieldException(errorMsg);
+            }
+
+            try {
+                Long.parseLong(identificacion);
+            } catch (NumberFormatException e) {
+                String errorMsg = "La identificación debe ser un número";
+                log.warn(errorMsg);
+                throw new InvalidFieldException(errorMsg);
+            }
+
+            Cliente savedCliente = clienteRepository.save(cliente);
+            log.info("Cliente guardado exitosamente: {}", savedCliente.getIdentificacion());
+
+            return GenericResponse.<ClienteDTO>builder()
+                    .status(HttpStatusCode.valueOf(HttpStatus.OK.value()))
+                    .message("Success")
+                    .payload(clienteMapper.clienteToClienteDTO(savedCliente))
+                    .build();
+
+        } catch (Exception e){
+            log.error("Error al guardar el cliente: {}", e.getMessage());
+            return GenericResponse.<ClienteDTO>builder()
+                    .status(HttpStatusCode.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()))
+                    .message(e.getMessage())
+                    .payload(null)
+                    .build();
         }
 
-        if (identificacion.length() > 10) {
-            String errorMsg = "La identificación debe tener 10 números";
-            logger.warn(errorMsg);
-            throw new InvalidFieldException(errorMsg);
-        }
-
-        try {
-            Long.parseLong(identificacion);
-        } catch (NumberFormatException e) {
-            String errorMsg = "La identificación debe ser un número";
-            logger.warn(errorMsg);
-            throw new InvalidFieldException(errorMsg);
-        }
-
-        Cliente savedCliente = clienteRepository.save(cliente);
-        logger.info("Cliente guardado exitosamente: {}", savedCliente.getIdentificacion());
-
-        return GenericResponse.<ClienteDTO>builder()
-                .status(HttpStatusCode.valueOf(HttpStatus.OK.value()))
-                .message("Success")
-                .payload(clienteMapper.clienteToClienteDTO(savedCliente))
-                .build();
     }
 
     /**
@@ -125,12 +132,12 @@ public class ClienteServiceImpl implements ClienteService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String identificacion = authentication.getName();
 
-        logger.info("Intentando actualizar cliente con identificación: {}", identificacion);
+        log.info("Intentando actualizar cliente con identificación: {}", identificacion);
 
         Cliente clientToUpdate = clienteRepository.findClienteByIdentificacion(identificacion)
                 .orElseThrow(() -> {
                     String errorMsg = "No se encontró el cliente con la identificación: " + identificacion;
-                    logger.error(errorMsg);
+                    log.error(errorMsg);
                     return new RecordNotFoundException(errorMsg);
                 });
 
@@ -143,7 +150,7 @@ public class ClienteServiceImpl implements ClienteService {
         updateFieldIfPresent(clientToUpdate::setTelefono, clienteDTO.getTelefono());
 
         Cliente updatedCliente = clienteRepository.save(clientToUpdate);
-        logger.info("Cliente actualizado exitosamente: {}", updatedCliente.getIdentificacion());
+        log.info("Cliente actualizado exitosamente: {}", updatedCliente.getIdentificacion());
 
         ClienteDTO updatedClienteDTO = clienteMapper.clienteToClienteDTO(updatedCliente);
         return GenericResponse.<ClienteDTO>builder()
@@ -162,19 +169,19 @@ public class ClienteServiceImpl implements ClienteService {
      */
     @Override
     public GenericResponse<String> delete(Long id) {
-        logger.info("Intentando eliminar lógicamente cliente con ID: {}", id);
+        log.info("Intentando eliminar lógicamente cliente con ID: {}", id);
 
         Cliente clientToDelete = clienteRepository.findById(id)
                 .orElseThrow(() -> {
                     String errorMsg = "No se encontró el cliente con el id: " + id;
-                    logger.error(errorMsg);
+                    log.error(errorMsg);
                     return new RecordNotFoundException(errorMsg);
                 });
 
         clientToDelete.setEstado(Boolean.FALSE);
         clienteRepository.save(clientToDelete);
 
-        logger.info("Cliente eliminado lógicamente: {}", id);
+        log.info("Cliente eliminado lógicamente: {}", id);
 
         return GenericResponse.<String>builder()
                 .status(HttpStatusCode.valueOf(HttpStatus.OK.value()))
